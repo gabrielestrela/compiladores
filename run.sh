@@ -1,11 +1,25 @@
-INPUT=../test/test.c-
-if [ $# -gt 0 ]
-then
-	INPUT=$1
+INPUT=./test/test.c-
+SRCDIR=./src
+BINDIR=./bin
+BINOBJ=gcc-
+
+if (( $# < 1 )); then
+    echo 'Input não especificado, usando padrão "'"$INPUT"'".'
+else
+    INPUT=$1
 fi
 
-mkdir -p bin 
-lex -o "bin/lex.yy.c" src/lex/lex.l && g++ -Isrc/lex/ -std=c++14 "bin/lex.yy.c" -o bin/gcc-
-pushd bin > /dev/null
-./gcc- $INPUT
-popd > /dev/null
+if [[ ! -d "$BINDIR" ]]; then
+    echo 'Diretório de binários inexistente, criando.'
+    mkdir -p bin
+fi
+
+if [[ ! -e "$BINDIR/$BINOBJ" ]]; then
+    echo 'Binário do lexer inexistente, gerando.'
+    lex -o "$BINDIR/lex.yy.c" "$SRCDIR/lex/lex.l" \
+        && g++ -I"$SRCDIR/lex/" -std=c++14 "$BINDIR/lex.yy.c" -o "$BINDIR/$BINOBJ"
+fi
+
+echo 'Rodando lexer para arquivo de input "'"$INPUT"'".'
+"$BINDIR/$BINOBJ" "$INPUT"
+echo 'Finalizado. Todos os resultados em "'relatorio.txt'".'
